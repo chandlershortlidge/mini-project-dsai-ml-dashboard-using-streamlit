@@ -62,3 +62,13 @@ def top_five_by_store():
     top_5 = data.groupby("Store ID").head(5)
     return top_5
 
+def get_films_for_search():
+    conn = get_connection()
+    query = """
+    SELECT title, description, rating, release_year
+    FROM film;
+    """
+    data = pd.read_sql(query, conn)
+    conn.close()
+    return data
+    

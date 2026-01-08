@@ -1,6 +1,17 @@
 import streamlit as st 
-from backend import get_connection, daily_rentals_by_store, total_revenue_by_store, top_five_by_store
+from backend import get_connection, daily_rentals_by_store, total_revenue_by_store, top_five_by_store, get_films_for_search
 from matplotlib import pylab as plt 
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+@st.cache_resource
+def load_model():
+    return SentenceTransformer("all-MiniLM-L6-v2")
+
+@st.cache_data
+def get_film_embeddings(_model, descriptions):
+    return _model.encode(descriptions)
 
 
 def main():
@@ -9,6 +20,8 @@ def main():
     st.image("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800")
 
     #EDA section
+
+    # DAILY RENTALS BY STORE
 
     st.header("Daily Rentals by Store: 2005")
     daily_rentals = daily_rentals_by_store()  # This IS a DataFrame
@@ -26,6 +39,9 @@ def main():
     plt.title("Daily Rentals By Store: 2005")
     st.pyplot(plt)
 
+
+    # TOTAL REVENUE BY STORE
+
     st.header("Total Revenue by Store: 2005")
     # bar plot 
     total_revenue = total_revenue_by_store() # create the dataframe
@@ -37,13 +53,36 @@ def main():
     st.pyplot(plt)
 
 
+    # TOP 5 MOVIES BY STORE 
+
     st.header("Top 5 Movie Rentals by Store")
     top_5 = top_five_by_store()
     st.dataframe(top_5)
 
-    st.header("Search")
-    # text and input 
+    # SEARCH FUNCTION    
+    films = get_films_for_search()
 
+
+   # Load model and encode descriptions (cached)
+    model = load_model()
+    film_embeddings = get_film_embeddings(model, films["description"].tolist())
+    #UI
+    st.header("Search for Movies")
+    user_input = st.text_area("What kind of movie do you want to watch?")
+
+    if st.button("Search"):
+        # encodes single user input to 1 vector
+        user_embedding = model.encode([user_input])
+        # Compute cosine similarities
+        similarities = cosine_similarity(user_embedding, film_embeddings)
+                    # compares that one user vector against all 1000 and returns a similarity score for each.
+        # Get indices of top 3 highest scores
+        top_3_indices = similarities[0].argsort()[-3:][::-1]
+
+        # Use those indices to get the films
+        top_3_films = films.iloc[top_3_indices]
+        st.write("Top 3 Matches:")
+        st.dataframe(top_3_films[['title', 'rating']])
 
 
 if __name__ == '__main__':
