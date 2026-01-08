@@ -89,7 +89,7 @@ def main():
         # Grabs rows 633, 292, and 845 from the films DataFrame — which are your top 3 matching movies.
 
         st.write("Top 3 Matches:")
-        st.dataframe(top_3_films[['title', 'rating', 'description']])
+        st.dataframe(top_3_films[['title', 'rating']])
 
 
 if __name__ == '__main__':
