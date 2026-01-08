@@ -17,7 +17,7 @@ def get_film_embeddings(_model, descriptions):
 def main():
     # Home section
     st.title("Sakila Video Rental Dashboard")
-    st.image("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800")
+    st.image("https://patch.com/img/cdn20/users/22887410/20180806/021129/styles/raw/public/processed_images/548991d-1533578743-3854.jpg?width=1200")
 
     #EDA section
 
@@ -78,11 +78,18 @@ def main():
                     # compares that one user vector against all 1000 and returns a similarity score for each.
         # Get indices of top 3 highest scores
         top_3_indices = similarities[0].argsort()[-3:][::-1]
+        # argsort() returns: [0, 1, 2, 3, 4] (indices in order of score, low to high)
+        # [-3:] = "last 3 items" --> [2, 3, 4] (the 3 highest scores)
+        # [::-1] = "reverse it" --> [4, 3, 2] (now highest first)
 
         # Use those indices to get the films
         top_3_films = films.iloc[top_3_indices]
+        # iloc lets you select rows by their index position (0, 1, 2, etc.).
+        # So if top_3_indices is [633, 292, 845] then films.iloc[top_3_indices] 
+        # Grabs rows 633, 292, and 845 from the films DataFrame — which are your top 3 matching movies.
+
         st.write("Top 3 Matches:")
-        st.dataframe(top_3_films[['title', 'rating']])
+        st.dataframe(top_3_films[['title', 'rating', 'description']])
 
 
 if __name__ == '__main__':
