@@ -28,11 +28,23 @@ def daily_rentals_by_store():
     return data # <-- returns a pandas DataFrame 
 
 
+def total_revenue_by_store():
+    conn = get_connection()
+    query = """
+    SELECT st.store_id AS "Store ID", SUM(py.amount) AS "Total Revenue Per Store"
+	FROM payment AS py
+    JOIN rental AS re ON py.rental_id = re.rental_id
+    JOIN inventory AS inv ON re.inventory_id = inv.inventory_id
+    JOIN store AS st ON inv.store_id = st.store_id
+    GROUP BY st.store_id;
+"""
+    data = pd.read_sql(query, conn)
+    conn.close()
+    return data 
 
 
 
-def total_benefit_by_store():
-        # daily rentals by each store in 2005
+def top_five_by_store():
     conn = get_connection()
     query = """
     SELECT st.store_id AS "Store ID", film.title AS "Title", COUNT(inv.film_id) as "Rental Count"
@@ -50,4 +62,3 @@ def total_benefit_by_store():
     top_5 = data.groupby("Store ID").head(5)
     return top_5
 
-print(total_benefit_by_store())
